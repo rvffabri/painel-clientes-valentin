@@ -173,12 +173,12 @@ with tabs[0]:
                 y=alt.Y("Cliente", sort='-x', title="Cliente"),
                 tooltip=[
                     alt.Tooltip("Cliente"),
+                    alt.Tooltip("Celular", title="Celular"),
                     alt.Tooltip("Total Gasto", title="Total Gasto (R$)", format=",.2f"),
+                     alt.Tooltip("Média Anual", title="Média Anual (R$)", format=",.2f"),
+                     alt.Tooltip("Anos Ativos", title="Anos Ativos"),
                     alt.Tooltip("Recorrência", title="Anos de Compra"),
-                    alt.Tooltip("Anos Ativos", title="Anos Ativos"),
-                    alt.Tooltip("Intervalo Sem Compra", title="Intervalo sem Compra (anos)"),
-                    alt.Tooltip("Média Anual", title="Média Anual (R$)", format=",.2f"),
-                    alt.Tooltip("Celular", title="Celular")
+                    alt.Tooltip("Intervalo Sem Compra", title="Intervalo sem Compra (anos)")
                 ]
             ).properties(height=600)
 
