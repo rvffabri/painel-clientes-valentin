@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from PIL import Image
+import base64
 
 st.set_page_config(page_title="Painel de Clientes", layout="wide")
 
@@ -13,6 +14,10 @@ st.markdown("""
         .block-container { padding-top: 2rem; padding-bottom: 2rem; }
         h1, h2, h3 { color: #2ecc71; }
         .stMetric { background-color: #eafaf1; border-radius: 12px; padding: 1rem; margin: 0.5rem 0; }
+        .stDataFrame div {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -126,7 +131,6 @@ with tabs[0]:
 
             base_filtrada = base_filtrada[base_filtrada["Anos Ativos"].apply(lambda anos: any(str(ano) in anos for ano in anos_selecionados))]
 
-            # 📌 Perfil dos clientes
             if regra == "💰 Fiel e Lucrativo":
                 media_total = base_final["Total Gasto"].mean()
                 base_filtrada = base_filtrada[
@@ -175,8 +179,8 @@ with tabs[0]:
                     alt.Tooltip("Cliente"),
                     alt.Tooltip("Celular", title="Celular"),
                     alt.Tooltip("Total Gasto", title="Total Gasto (R$)", format=",.2f"),
-                     alt.Tooltip("Média Anual", title="Média Anual (R$)", format=",.2f"),
-                     alt.Tooltip("Anos Ativos", title="Anos Ativos"),
+                    alt.Tooltip("Média Anual", title="Média Anual (R$)", format=",.2f"),
+                    alt.Tooltip("Anos Ativos", title="Anos Ativos"),
                     alt.Tooltip("Recorrência", title="Anos de Compra"),
                     alt.Tooltip("Intervalo Sem Compra", title="Intervalo sem Compra (anos)")
                 ]
@@ -191,6 +195,23 @@ with tabs[0]:
             base_exibicao["Total Gasto"] = base_exibicao["Total Gasto"].apply(lambda x: f"R${x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
             base_exibicao["Média Anual"] = base_exibicao["Média Anual"].apply(lambda x: f"R${x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
             st.dataframe(base_exibicao.reset_index(drop=True), use_container_width=True)
+
+            # 📥 DOWNLOAD - CSV separado por colunas (Excel-friendly)
+            if not base_filtrada.empty:
+                exportar = base_filtrada.copy()
+                exportar["Total Gasto"] = exportar["Total Gasto"].apply(lambda x: f"R${x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+                exportar["Média Anual"] = exportar["Média Anual"].apply(lambda x: f"R${x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+                csv_data = exportar.to_csv(index=False, sep=";", encoding="utf-8-sig")
+                b64 = base64.b64encode(csv_data.encode()).decode()
+                download_link = f'''
+                    <a href="data:file/csv;base64,{b64}" download="clientes.csv">
+                        <button style="background-color:#2ecc71;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;">
+                            ⬇️ Baixar CSV
+                        </button>
+                    </a>
+                '''
+                st.markdown("### 📤 Exportar Dados")
+                st.markdown(download_link, unsafe_allow_html=True)
 
         else:
             st.error("A planilha deve conter as colunas: Cliente, Vendas e Ano.")
